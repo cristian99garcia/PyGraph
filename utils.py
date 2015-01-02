@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import random
+
+
 def html_to_cairo(color):
     # Convertir un html color(hexadecimal) a un cairo color. 
     if color.startswith('#'): 
@@ -33,3 +36,15 @@ def get_cairo_color(color):
 
     else:
         raise TypeError('"color" must be a list, a tuple, or a string, not a %s' % (str(type(color))).split(' ')[1][:-1])
+
+
+def get_random_color():
+    return (random.randint(1, 100) / 100.0, random.randint(1, 100) / 100.0, random.randint(1, 100) / 100.0)
+
+
+def get_opposite_color(color):
+    color = get_cairo_color(color)
+    if color != (0.5, 0.5, 0.5):
+        return (1.0 - color[0], 1.0 - color[1], 1.0 - color[2])
+    else:
+        return (1.0, 1.0, 1.0)

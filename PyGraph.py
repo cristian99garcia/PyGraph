@@ -1,6 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# PyGraph.py
+#
+# Copyright (c) 2015 Cristian García
+#
+# Author: Cristian García <cristian99garcia@gmail.com>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation; either version 3 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA
+
 import math
 import utils
 
@@ -67,11 +88,14 @@ class DotGraph():
 
         self.context = context
 
+    def get_context(self):
+        return self.context
+
     def set_data(self, data):
         """
         data:
             Un diccionario, con los nombres de los datos a graficar
-            como keys, y una lista de esas como los valores a graficar.
+            como keys, y una lista con los valores a graficar.
         """
 
         if type(data) == dict:
@@ -85,9 +109,11 @@ class DotGraph():
     def set_colors(self, colors):
         """
         colors:
-            Un diccionario, con las mimsas keys utilizadas en data, con una
-            tupla con 3 decimales(del 0 al 1) para indicar el color del
+            Un diccionario, con las mimsas keys utilizadas en self.data, con
+            una tupla con 3 decimales(del 0 al 1) para indicar el color del
             elemento key.
+            También puede ser un color de HTML(hexadecimal) o un color
+            RGB(una tupla o lista con valores del 0 al 255)
         """
 
         if type(colors) == dict:
@@ -424,52 +450,59 @@ class DotGraph():
         self.h_step = (self.h_end - self.h_start) / float(self.max_h_label - 1)
         self.v_step = (self.v_start - self.v_end) / float(self.max_v_label)
 
-    def render_background(self):
-        cr = self.context
+        for name in self.data.keys():
+            if name not in self.colors.keys():
+                self.colors[name] = utils.get_random_color()
 
-        cr.set_source_rgb(*self.background)
-        cr.rectangle(0, 0, self.width, self.height)
-        cr.fill()
+    def render_background(self):
+        self.context.set_source_rgb(*self.background)
+        self.context.rectangle(0, 0, self.width, self.height)
+        self.context.fill()
 
     def render_frame(self):
-        cr = self.context
-        cr.set_line_width(self.frame_width)
-        cr.set_source_rgb(*self.frame_color)
+        self.context.set_line_width(self.frame_width)
+        self.context.set_source_rgb(*self.frame_color)
 
-        cr.move_to(self.border, self.border)
-        cr.line_to(self.width - self.border, self.border)
-        cr.line_to(self.width - self.border, self.height - self.border)
-        cr.line_to(self.border, self.height - self.border)
-        cr.line_to(self.border, self.border - self.frame_width / 2)
-        cr.stroke()
+        self.context.move_to(self.border, self.border)
+        self.context.line_to(self.width - self.border, self.border)
+        self.context.line_to(
+            self.width - self.border, self.height - self.border)
+        self.context.line_to(self.border, self.height - self.border)
+        self.context.line_to(self.border, self.border - self.frame_width / 2)
+        self.context.stroke()
 
     def render_axes(self):
-        cr = self.context
-        cr.set_line_width(self.axes_width)
-        cr.set_source_rgb(*self.axes_color)
-        cr.set_font_size(self.axes_labels_sizes)
+        self.context.set_line_width(self.axes_width)
+        self.context.set_source_rgb(*self.axes_color)
+        self.context.set_font_size(self.axes_labels_sizes)
 
-        cr.move_to(self.h_start, self.v_start)
-        cr.line_to(self.h_end, self.v_start)
-        cr.move_to(self.h_start, self.v_start)
-        cr.line_to(self.h_start, self.v_end)
-        cr.stroke()
+        self.context.move_to(self.h_start, self.v_start)
+        self.context.line_to(self.h_end, self.v_start)
+        self.context.move_to(self.h_start, self.v_start)
+        self.context.line_to(self.h_start, self.v_end)
+        self.context.stroke()
 
         if self.draw_rows:
             # Horizontal row
             diference = self.axes_width / 4.0
-            cr.move_to(self.h_end, self.start_y - diference)
-            cr.line_to(self.h_end - 20, self.start_y - diference * 2 - 12)
-            cr.move_to(self.h_end, self.start_y - diference * 3)
-            cr.line_to(self.h_end - 20, self.start_y - diference * 2 + 12)
+            self.context.move_to(self.h_end, self.start_y - diference)
+            self.context.line_to(
+                self.h_end - 20, self.start_y - diference * 2 - 12)
+            self.context.move_to(self.h_end, self.start_y - diference * 3)
+            self.context.line_to(
+                self.h_end - 20, self.start_y - diference * 2 + 12)
 
             # Vertical row
-            cr.move_to(self.h_start + diference, self.height - self.v_start)
-            cr.line_to(self.h_start + 12, self.height - self.v_start + 20)
-            cr.move_to(self.h_start - diference, self.height - self.v_start)
-            cr.line_to(self.h_start - 12, self.height - self.v_start + 20)
+            self.context.move_to(
+                self.h_start + diference, self.height - self.v_start)
+            self.context.line_to(
+                self.h_start + 12, self.height - self.v_start + 20)
+            self.context.move_to(
+                self.h_start - diference, self.height - self.v_start)
+            self.context.line_to(
+                self.h_start - 12, self.height - self.v_start + 20)
 
-            cr.stroke()
+            self.context.stroke()
 
         if self.draw_marks and self.data:
             for x in range(1, self.axes_marks + 1):
@@ -479,10 +512,10 @@ class DotGraph():
                 vy = self.v_start - self.v_distance * x
 
                 if x != self.axes_marks or not self.draw_rows:
-                    cr.move_to(hx, hy)
-                    cr.line_to(hx, hy + 10)
-                    cr.move_to(vx - 10, vy)
-                    cr.line_to(vx, vy)
+                    self.context.move_to(hx, hy)
+                    self.context.line_to(hx, hy + 10)
+                    self.context.move_to(vx - 10, vy)
+                    self.context.line_to(vx, vy)
 
         if self.draw_marks_labels:
             for x in range(1, self.axes_marks + 1):
@@ -505,22 +538,22 @@ class DotGraph():
                     v_label = v_label.split('.')[0] + '.' + \
                         v_label.split('.')[1][:2]
 
-                cr.move_to(
+                self.context.move_to(
                     hx - (self.axes_labels_sizes + 10) / 2.0,
                     hy + self.axes_width / 2 + (self.axes_labels_sizes + 10))
-                cr.show_text(h_label)
+                self.context.show_text(h_label)
 
-                cr.move_to(
+                self.context.move_to(
                     vx - len(v_label) * self.axes_labels_sizes,
                     self.v_start - self.v_distance * (
                         self.axes_marks - x + 1) + self.axes_labels_sizes / 2)
-                cr.show_text(v_label)
+                self.context.show_text(v_label)
 
-            cr.stroke()
+            self.context.stroke()
 
     def render_graph(self):
         for name, values in self.data.items():
-            last_x, last_y = 0, 0
+            x0, y0 = 0, 0
             draw_lines = False
 
             for index in range(0, len(values)):
@@ -529,14 +562,11 @@ class DotGraph():
                 y = self.start_y - self.v_step * values[index] - \
                     self.dots_radius / 2.0
 
-                if name in self.colors:
-                    self.context.set_source_rgb(*self.colors[name])
-                else:
-                    self.context.set_source_rgb(0, 0, 0)
+                self.context.set_source_rgb(*self.colors[name])
 
                 if draw_lines:
                     self.context.set_line_width(self.graph_line_width)
-                    self.context.move_to(last_x, last_y)
+                    self.context.move_to(x0, y0)
                     self.context.line_to(x, y)
                     self.context.stroke()
                 else:
@@ -544,10 +574,216 @@ class DotGraph():
 
                 self.context.arc(x, y, self.dots_radius, 0, 2 * math.pi)
                 self.context.fill()
-                last_x, last_y = x, y
+                x0, y0 = x, y
+
+
+class PieGraph():
+
+    width = 0
+    height = 0
+    line_width = 0
+
+    def __init__(self, context=None, data={},
+                 colors={}, width=500, height=500, radius=-100):
+
+        self.context = context
+        self.set_data(data)
+        self.set_colors(colors)
+        self.set_width(width)
+        self.set_height(height)
+        self.set_radius(radius if radius != 0 else min([width, height]) / 2.0)
+        self.start_angle = 0
+        self.inner_radius = 0
+        self.line_color = (0.0, 0.0, 0.0)
+        self.line_width = 2
+        self.font_size = 15
+
+    def set_context(self, context):
+        """
+        context:
+            Un cairo context sobre el cual dibujar.
+        """
+
+        self.context = context
+
+    def get_context(self):
+        return self.context
+
+    def set_data(self, data):
+        """
+        data:
+            Un diccionario, con los nombres de los datos a graficar
+            como keys, y el valor correspondiente de cada dato como value.
+        """
+
+        if type(data) == dict:
+            self.data = data
+        else:
+            return TypeError('"data" must be a dict')
+
+    def get_data(self):
+        return self.data
+
+    def set_colors(self, colors):
+        """
+        colors:
+            Un diccionario, con las mimsas keys utilizadas en self.data, con
+            una tupla con 3 decimales(del 0 al 1) para indicar el color del
+            elemento key.
+            También puede ser un color de HTML(hexadecimal) o un color
+            RGB(una tupla o lista con valores del 0 al 255)
+        """
+
+        if type(colors) == dict:
+            for name in colors:
+                colors[name] = utils.get_cairo_color(colors[name])
+
+            self.colors = colors
+        else:
+            return TypeError('"colors" must be a dict')
+
+    def set_width(self, width):
+        """
+        width:
+            Un entero o un decimal, el ancho total de la gráfica.
+            Para usar el ancho total de un GtkDrawingArea:
+
+            allocation = area.get_allocation()
+            width = allocation.width
+        """
+
+        if type(width) in [float, int]:
+            self.width = width - self.line_width
+            self.radius = min([self.width, self.height]) / 2.0
+        else:
+            raise TypeError('"width" must be a int or float')
+
+    def get_width(self):
+        return self.width
+
+    def set_height(self, height):
+        """
+        height:
+            Un entero o un decimal, el alto total de la gráfica
+            Para usar el alto total de un GtkDrawingArea:
+
+            allocation = area.get_allocation()
+            height = allocation.height
+        """
+
+        if type(height) in [float, int]:
+            self.height = height - self.line_width
+            self.radius = min([self.width, self.height]) / 2.0
+        else:
+            raise TypeError('"height" must be a int or float')
+
+    def set_background(self, background):
+        """
+        background:
+            Una lista o una tupla con tres valores,
+            del 0.0 al 1.0 o del 0 al 255, ejemplos:
+            [0.4, 0.3, 0.6]    (0.2, 0.6, 1.0)    [35, 200, 110]
+
+            También puede ser una cadena de texto, en formato hexadecimal
+            Por ejemplo:
+                "#32FF32"
+        """
+
+        if type(background) in [list, tuple, str]:
+            self.background = utils.get_cairo_color(background)
+        else:
+            raise TypeError(
+                '"background" must be a list, a tuple, or a string')
+
+    def get_background(self):
+        return self.background
+
+    def set_radius(self, radius):
+        """
+        radius:
+            El radio del círculo de la gráfica.
+        """
+
+        if type(radius) in [int, float]:
+            self.radius = radius
+        else:
+            raise TypeError('"radius" must be a int or float')
+
+    def render(self):
+        self.render_background()
+        if self.data and self.context:
+            self.calculate_things()
+            self.render_graph()
+            self.render_labels()
+
+    def render_background(self):
+        self.context.set_source_rgb(*self.background)
+        self.context.rectangle(0, 0, self.width, self.height)
+        self.context.fill()
+
+    def calculate_things(self):
+        self.center_x = self.width / 2.0 + self.line_width / 2.0
+        self.center_y = self.height / 2.0 + self.line_width / 2.0
+        self.total = sum([value for name, value in self.data.items()])
+
+        for name in self.data.keys():
+            if name not in self.colors.keys():
+                self.colors[name] = utils.get_random_color()
+
+    def render_graph(self):
+        start = self.start_angle
+        end = 0
+
+        for name, value in self.data.items():
+            end = start + 2.0 * math.pi * value / self.total
+
+            self.context.set_source_rgba(*self.colors[name])
+            self.draw_piece(start, end)
+            self.context.fill()
+
+            self.context.set_source_rgba(*self.line_color)
+            self.draw_piece(start, end)
+            self.context.stroke()
+
+            start = end
+
+    def draw_piece(self, start, end):
+        cx, cy = self.center_x, self.center_y
+        self.context.set_line_width(self.line_width)
+        self.context.move_to(cx + self.inner_radius * math.cos(start),
+                             cy + self.inner_radius * math.sin(start))
+        self.context.line_to(cx + self.radius * math.cos(start),
+                             cy + self.radius * math.sin(start))
+        self.context.arc(cx, cy, self.radius, start, end)
+        self.context.line_to(cx + self.inner_radius * math.cos(end),
+                             cy + self.inner_radius * math.sin(end))
+        self.context.arc_negative(cx, cy, self.inner_radius, end, start)
+        self.context.close_path()
+
+    def render_labels(self):
+        start = self.start_angle
+        end = 0
+        x0, y0 = self.center_x, self.center_y
+        self.context.set_font_size(self.font_size)
+
+        for name, value in self.data.items():
+            end = start + 2.0 * math.pi * value / self.total
+            self.context.set_source_rgba(
+                *utils.get_opposite_color(self.colors[name]))
+            w = self.context.text_extents(name)[2]
+            h = self.context.text_extents(name)[4]
+            x = x0 + (self.radius - w) * math.cos(
+                (start + end) / 2.0) - w + self.line_width * 2
+            y = y0 + (self.radius - h) * math.sin(
+                (start + end) / 2.0) - self.line_width
+
+            self.context.move_to(x, y)
+            self.context.show_text(name)
+            start = end
 
 
 """
+import random
 from gi.repository import Gtk
 
 
@@ -558,25 +794,39 @@ class Window(Gtk.Window):
 
         self.context = None
         self.area = Gtk.DrawingArea()
-        self.graph = DotGraph()
-        data = {
-            'Juan':  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-            'Jorge': [1, 5, 2, 6, 7, 3, 6, 4, 3 ,6],
-            'Pepe':  [5, 0, 2, 5, 7, 9, 4, 5, 5, 3]}
-        colors = {
-            'Juan': (0.23, 0.53, 0.24),
-            'Jorge': (0.5, 0.5, 0.0),
-            'Pepe': (0.1, 0.4, 0.7)}
+        self.colors = {'Juan': utils.get_random_color(),
+                       'Jorge': utils.get_random_color(),
+                       'Pepe': utils.get_random_color()}
+
+        graph = 0
+
+        if graph == 0:
+            self.draw_dots_graph()
+        elif graph == 1:
+            self.draw_pie_graph()
 
         self.set_title('PyGraphExample')
-        self.graph.set_data(data)
-        self.graph.set_colors(colors)
+        self.set_size_request(400, 400)
 
         self.area.connect('draw', self.__drag_cb)
         self.connect('destroy', Gtk.main_quit)
 
         self.add(self.area)
         self.show_all()
+
+    def draw_dots_graph(self):
+        data = {'Juan': random.sample(xrange(20), 10),
+                'Jorge': random.sample(xrange(20), 10),
+                'Pepe': random.sample(xrange(20), 10)}
+
+        self.graph = DotGraph(data=data, colors=self.colors)
+
+    def draw_pie_graph(self):
+        data = {'Juan': random.randint(1, 100),
+                'Jorge': random.randint(1, 100),
+                'Pepe': random.randint(1, 100)}
+
+        self.graph = PieGraph(data=data, colors=self.colors)
 
     def __drag_cb(self, widget, context):
         allocation = self.get_allocation()
